@@ -26,29 +26,28 @@ class move_calculator
     public function generateMoveableArray()
     {
         $this->checkArrayAndPopulateMoveableArray('row');
-        print_r($this->moveableArray);
         $this->checkArrayAndPopulateMoveableArray('column');
         $this->runThroughForwardDiagonal();
         $this->runThroughBackwardDiagonal();
         return $this->moveableArray;
     }
 
-    public function checkArrayAndPopulateMoveableArray($option)
+    private function checkArrayAndPopulateMoveableArray($option)
     {
         $computerCellCount = $opponentCellCount = $freeCellCount = 0;
         $winnable = false;
         $weight = $a = $b = 0;
 
         for ($i = 0; $i < $this->boardSize; $i++) {
+            $computerCellCount = $opponentCellCount = $freeCellCount = 0;
             for ($j = 0; $j < $this->boardSize; $j++) {
                 if ($option === 'row') {
-                    $a = $i;
-                    $b = $j;
-                } else {
                     $a = $j;
                     $b = $i;
+                } else {
+                    $a = $i;
+                    $b = $j;
                 }
-                print_r("$this->gameArray[" . $a . "][" . $b . "]= " . $this->gameArray[$a][$b] . "\n");
 
                 if ($this->gameArray[$a][$b] === $this->opponentSign) {
                     $opponentCellCount++;
@@ -61,10 +60,11 @@ class move_calculator
 
             $weight = $this->calculateWeight($computerCellCount, $opponentCellCount, $freeCellCount);
 
-            if ($option === 'row') {
-                $this->findFreeRowCellsAndAssignWeight($this->gameArray[$i], $j - 1, $weight);
+            if ($option === 'column') {
+                $this->findFreeColumnCellsAndAssignWeight($a, $weight, $weight === 1);
+                print_r("/" . $weight . "\n");
             } else {
-                $this->findFreeColumnCellsAndAssignWeight($j, $weight);
+                $this->findFreeRowCellsAndAssignWeight($b, $weight, $weight === 1);
             }
         }
 
@@ -86,24 +86,45 @@ class move_calculator
         return $weight;
     }
 
-    public function findFreeRowCellsAndAssignWeight($row, $j, $weight)
+    private function findFreeColumnCellsAndAssignWeight($i, $weight, $exception)
     {
-        ;
-        for ($i = 0; $i < $this->boardSize; $i++) {
-            if ($row[$i] === '') {
-                $tempCell = new Cell($i, $j, $weight);
-                array_push($this->moveableArray, $tempCell);
+        for ($j = 0; $j < $this->boardSize; $j++) {
+            if ($this->gameArray[$i][$j] === '') {
+
+                $this->pushNewValuesAndUpdateWeight($i, $j, $weight, $exception);
+
             }
         }
     }
 
-    public function findFreeColumnCellsAndAssignWeight($i, $weight)
+    private function pushNewValuesAndUpdateWeight($x, $y, $weight, $exception)
     {
-        ;
-        for ($j = 0; $j < $this->boardSize; $j++) {
+
+        $found = false;
+        $calculatedWeight = 0;
+        for ($i = 0; $i < sizeof($this->moveableArray); $i++) {
+            if (($this->moveableArray[$i]->x === $x) && ($this->moveableArray[$i]->y === $y)) {
+                $found = true;
+                if ($this->moveableArray[$i]->weight < $weight && !$exception) {
+                    $this->moveableArray[$i]->weight = $weight;
+                    $calculatedWeight = $this->moveableArray[$i]->weight;
+                }
+            }
+        }
+
+        if (!$found) {
+            $tempCell = new Cell($x, $y, '', $calculatedWeight);
+            array_push($this->moveableArray, $tempCell);
+        }
+    }
+
+    private function findFreeRowCellsAndAssignWeight($j, $weight, $exception)
+    {
+
+        for ($i = 0; $i < $this->boardSize; $i++) {
+            print_r($i . " " . $j . " " . $this->gameArray[$i][$j] . "\n");
             if ($this->gameArray[$i][$j] === '') {
-                $tempCell = new Cell($i, $j, $weight);
-                array_push($this->moveableArray, $tempCell);
+                $this->pushNewValuesAndUpdateWeight($i, $j, $weight, $exception);
             }
         }
     }
@@ -124,18 +145,17 @@ class move_calculator
         }
         $weight = $this->calculateWeight($computerCellCount, $opponentCellCount, $freeCellCount);
 
-        $this->findFreeForwardDiagonalCellsAndAssignWeight($weight);
+        $this->findFreeForwardDiagonalCellsAndAssignWeight($weight, $weight === 1);
 
         return $winnable;
     }
 
-    public function findFreeForwardDiagonalCellsAndAssignWeight($weight)
+    private function findFreeForwardDiagonalCellsAndAssignWeight($weight, $exception)
     {
         ;
         for ($i = 0; $i < $this->boardSize; $i++) {
             if ($this->gameArray[$i][$i] === '') {
-                $tempCell = new Cell($i, $i, $weight);
-                array_push($this->moveableArray, $tempCell);
+                $this->pushNewValuesAndUpdateWeight($i, $i, $weight, $exception);
             }
         }
     }
@@ -157,20 +177,35 @@ class move_calculator
 
         $weight = $this->calculateWeight($computerCellCount, $opponentCellCount, $freeCellCount);
 
-        $this->findFreeBackwardDiagonalCellsAndAssignWeight($weight);
+        $this->findFreeBackwardDiagonalCellsAndAssignWeight($weight, $weight === 1);
         return $winnable;
     }
 
-    public function findFreeBackwardDiagonalCellsAndAssignWeight($weight)
+    private function findFreeBackwardDiagonalCellsAndAssignWeight($weight, $exception)
     {
         ;
         for ($i = $this->boardSize - 1, $j = 0; $i > -1, $j < $this->boardSize; $i--, $j++) {
             if ($this->gameArray[$i][$j] === '') {
-                $tempCell = new Cell($i, $j, $weight);
-                array_push($this->moveableArray, $tempCell);
+                $this->pushNewValuesAndUpdateWeight($i, $j, $weight, $exception);
             }
         }
     }
 
+}
+
+class Cell
+{
+    private $x = 0;
+    public $y = 0;
+    public $weight = 0;
+    public $value = '';
+
+    public function __construct($x, $y, $value, $weight)
+    {
+        $this->x = $x;
+        $this->y = $y;
+        $this->weight = $weight;
+        $this->value = $value;
+    }
 }
 
