@@ -4,8 +4,14 @@
 namespace App\Http\Interactor;
 
 
-// use App\Http\Models\Cell;
+use App\Models\Cell;
+use App\repositories\Game_moves;
+use Illuminate\Support\Facades\App;
 
+/**
+ * Class move_calculator
+ * @package App\Http\Interactor
+ */
 class move_calculator
 {
     private $moveableArray = [];
@@ -13,6 +19,10 @@ class move_calculator
     private $opponentSign = [];
     private $computerSign = [];
     private $boardSize = [];
+    private $playerWon = false;
+    private $computerWon = false;
+    private $finalMovesArray = [];
+    private $movesRepository;
 
     public function __construct($gameArray, $opponentSign, $computerSign, $size)
     {
@@ -20,17 +30,34 @@ class move_calculator
         $this->opponentSign = $opponentSign;
         $this->computerSign = $computerSign;
         $this->boardSize = $size;
+        $this->movesRepository = App::make(Game_moves::class);
     }
 
+    public function getBestRoutes()
+    {
+        $this->generateMoveableArray();
+        $maxValue = max(array_column($this->moveableArray, 'weight'));
 
-    public function generateMoveableArray()
+        for ($i = 0; $i < sizeof($this->moveableArray); $i++) {
+            if ($this->moveableArray[$i]->weight === $maxValue) {
+                array_push($this->finalMovesArray, $this->moveableArray[$i]);
+            }
+        }
+
+        $random_value = array_rand($this->finalMovesArray);
+
+        $this->movesRepository->insertMove($random_value->x, $random_value->y, $random_value->weight);
+        return $this->finalMovesArray[$random_value];
+    }
+
+    private function generateMoveableArray()
     {
         $this->checkArrayAndPopulateMoveableArray('row');
         $this->checkArrayAndPopulateMoveableArray('column');
         $this->runThroughForwardDiagonal();
         $this->runThroughBackwardDiagonal();
-        return $this->moveableArray;
     }
+
 
     private function checkArrayAndPopulateMoveableArray($option)
     {
@@ -73,6 +100,9 @@ class move_calculator
 
     private function calculateWeight($computerCellCount, $opponentCellCount, $freeCellCount)
     {
+
+        $this->checkIfGameWon($opponentCellCount, $computerCellCount);
+
         $weight = 0;
         if ($opponentCellCount === 2 || $computerCellCount === 2) {
             $weight = 3;
@@ -83,7 +113,18 @@ class move_calculator
         } else if ($freeCellCount === 0) {
             $weight = 0;
         }
+
         return $weight;
+    }
+
+    private function checkIfGameWon($opponentCellCount, $computerCellCount)
+    {
+        if ($opponentCellCount === 3) {
+            $this->playerWon = true;
+        }
+        if ($computerCellCount === 2) { // the next move will always be a winning one for the computer player
+            $this->computerWon = true;
+        }
     }
 
     private function findFreeColumnCellsAndAssignWeight($i, $weight, $exception)
@@ -152,7 +193,7 @@ class move_calculator
 
     private function findFreeForwardDiagonalCellsAndAssignWeight($weight, $exception)
     {
-        ;
+
         for ($i = 0; $i < $this->boardSize; $i++) {
             if ($this->gameArray[$i][$i] === '') {
                 $this->pushNewValuesAndUpdateWeight($i, $i, $weight, $exception);
@@ -183,29 +224,11 @@ class move_calculator
 
     private function findFreeBackwardDiagonalCellsAndAssignWeight($weight, $exception)
     {
-        ;
+
         for ($i = $this->boardSize - 1, $j = 0; $i > -1, $j < $this->boardSize; $i--, $j++) {
             if ($this->gameArray[$i][$j] === '') {
                 $this->pushNewValuesAndUpdateWeight($i, $j, $weight, $exception);
             }
         }
     }
-
 }
-
-class Cell
-{
-    private $x = 0;
-    public $y = 0;
-    public $weight = 0;
-    public $value = '';
-
-    public function __construct($x, $y, $value, $weight)
-    {
-        $this->x = $x;
-        $this->y = $y;
-        $this->weight = $weight;
-        $this->value = $value;
-    }
-}
-
