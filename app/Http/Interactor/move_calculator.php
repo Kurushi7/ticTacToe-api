@@ -6,7 +6,6 @@ namespace App\Http\Interactor;
 
 use App\Models\Cell;
 use App\repositories\Game_moves;
-use Illuminate\Support\Facades\App;
 
 /**
  * Class move_calculator
@@ -30,7 +29,7 @@ class move_calculator
         $this->opponentSign = $opponentSign;
         $this->computerSign = $computerSign;
         $this->boardSize = $size;
-        $this->movesRepository = App::make(Game_moves::class);
+        $this->movesRepository = \app(Game_moves::class);
     }
 
     public function getBestRoutes()
