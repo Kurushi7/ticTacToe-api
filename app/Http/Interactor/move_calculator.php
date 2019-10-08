@@ -29,7 +29,7 @@ class move_calculator
         $this->opponentSign = $opponentSign;
         $this->computerSign = $computerSign;
         $this->boardSize = $size;
-        $this->movesRepository = \app(Game_moves::class);
+        $this->movesRepository = app(Game_moves::class);
     }
 
     public function getBestRoutes()
