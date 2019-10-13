@@ -14,15 +14,17 @@ class GameController extends Controller
      */
     public function __construct()
     {
-        $array = [
-            ['', '', ''],
-            ['X', 'O', ''],
-            ['X', 'X', '']];
-        $this->calculator = new move_calculator($array, 'X', 'O', 3);
+//        $array = [
+//            ['', '', ''],
+//            ['X', 'O', ''],
+//            ['X', 'X', '']];
+//        $this->calculator = new move_calculator($array, 'X', 'O', 3);
+        $this->calculator = app(move_calculator::class);
     }
 
     public function __invoke()
     {
+
         $result = $this->calculator->getBestRoutes();
         return response()->json($result);
     }
