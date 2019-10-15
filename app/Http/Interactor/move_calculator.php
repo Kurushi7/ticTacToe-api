@@ -37,7 +37,7 @@ class move_calculator
     {
 
         $params = $this->request->json()->all();
-        $this->gameArray = [
+        $this->gameArray = [ //comment to receive the array from the request
             ['', '', ''],
             ['X', 'O', ''],
             ['X', 'X', '']];
