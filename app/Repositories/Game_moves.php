@@ -25,7 +25,7 @@ class Game_moves
 
     private function getLastGameId()
     {
-        $gameId = $this->model::max('gameId');
+        $gameId = $this->model::max('game_Id');
         return $gameId === NULL ? 1 : $gameId;
 
     }

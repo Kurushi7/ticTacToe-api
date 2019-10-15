@@ -37,8 +37,11 @@ class move_calculator
     {
 
         $params = $this->request->json()->all();
-
-        $this->gameArray = $params['array'];
+        $this->gameArray = [
+            ['', '', ''],
+            ['X', 'O', ''],
+            ['X', 'X', '']];
+//        $this->gameArray = $params['array'];
 
         $this->opponentSign = $params['opponentSign'];
         $this->computerSign = $params['computerSign'];

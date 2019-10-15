@@ -20,4 +20,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::get('/getNextMove', 'GameController');
 
-Route::get('/insertMove', 'PlayerController');
+Route::post('/insertMove', 'PlayerController');
