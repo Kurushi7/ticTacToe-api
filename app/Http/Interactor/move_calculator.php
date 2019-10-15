@@ -37,11 +37,11 @@ class move_calculator
     {
 
         $params = $this->request->json()->all();
-        $this->gameArray = [
-            ['', '', ''],
-            ['X', 'O', ''],
-            ['X', 'X', '']];
-//        $this->gameArray = $params['array'];
+//        $this->gameArray = [ //uncomment and comment next line to send a static predefined array.
+//            ['', '', ''],
+//            ['X', 'O', ''],
+//            ['X', 'X', '']];
+        $this->gameArray = $params['array']; //
 
         $this->opponentSign = $params['opponentSign'];
         $this->computerSign = $params['computerSign'];
@@ -64,7 +64,6 @@ class move_calculator
                 array_push($this->finalMovesArray, $this->moveableArray[$i]);
             }
         }
-        print_r($this->finalMovesArray);
         $random_value = array_rand($this->finalMovesArray);
 
         $this->movesRepository->insertMove($this->finalMovesArray[$random_value]->x, $this->finalMovesArray[$random_value]->y, $this->finalMovesArray[$random_value]->weight, false);
@@ -200,7 +199,6 @@ class move_calculator
         for ($i = 0; $i < $this->boardSize; $i++) {
 
             if ($this->gameArray[$i][$j] === '') {
-//                print_r("col ".$i . " " . $j . " " . $this->gameArray[$i][$j] . " weight= ".$weight."\n");
                 $this->pushNewValuesAndUpdateWeight($i, $j, $weight, $exception);
             }
         }
