@@ -37,6 +37,7 @@ class move_calculator
     {
 
         $params = $this->request->json()->all();
+
 //        $this->gameArray = [ //uncomment and comment next line to send a static predefined array.
 //            ['', '', ''],
 //            ['X', 'O', ''],
